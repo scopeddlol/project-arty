@@ -59,7 +59,7 @@ Outside a lobby, drawings, zones, polygons, and user markers are stored locally 
 - Show teammates as labelled artillery-to-target overlays without their range circles
 - Keep camera position, zoom, active tool, layers, point locks, theme, and language local
 
-Lobby connections are optional and start only after a player creates or joins a room. See [Collaborative lobbies](lobbies.md) for configuration, server limits, privacy, recovery, and deployment.
+Lobbies need the upstream project's Cloudflare lobby service, which only accepts the official site. They are therefore **disabled** in PROJECT: ARTY (`collab.enabled` in `config/app.json`), and the lobby menu is hidden.
 
 ### Mobile Interface
 

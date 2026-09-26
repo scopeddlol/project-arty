@@ -44,12 +44,12 @@ for (const path of htmlFiles) {
     assert.doesNotMatch(html, /Content-Security-Policy[^>]+localhost/i, `${page}: development origin leaked into CSP`);
 }
 
-assert.equal(artifactFiles.some(path => path.endsWith('.bin')), false, 'terrain binaries entered the Pages artifact');
-assert.equal(artifactFiles.some(path => path.includes(`${join('maps', 'tiles')}`)), false, 'map tiles entered the Pages artifact');
+assert.equal(artifactFiles.some(path => path.endsWith('.bin')), false, 'terrain binaries entered the build artifact');
+assert.equal(artifactFiles.some(path => path.includes(`${join('maps', 'tiles')}`)), false, 'map tiles entered the build artifact');
 
 for (const mapId of ['bakurani', 'ozeti', 'zestafona']) {
     const contourPath = join(dist, 'data', 'terrain', mapId, 'contours.json');
-    assert.ok(artifactFiles.includes(contourPath), `${mapId} contours are missing from the Pages artifact`);
+    assert.ok(artifactFiles.includes(contourPath), `${mapId} contours are missing from the build artifact`);
 
     const contours = JSON.parse(await readFile(contourPath, 'utf8'));
     assert.equal(contours.format, 'wardogs-contours-v1', `${mapId} contours have an unsupported format`);

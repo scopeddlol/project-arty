@@ -39,7 +39,9 @@ English pages use `<base href="../../">`; localized pages use `<base href="../..
 
 ### Bakurani
 
-Bakurani uses a multi-resolution WebP tile pyramid published to Cloudflare R2.
+Bakurani uses a multi-resolution WebP tile pyramid published to the upstream
+asset CDN (Cloudflare R2). The Docker image proxies and caches it under `/cdn/`;
+see [Self-hosting](self-hosting.md).
 Object keys in the `wardogs-assets` bucket have this structure:
 
 ```text
@@ -106,11 +108,11 @@ chunks use R2 as described in [Terrain3D hosting](terrain.md#terrain3d-hosting).
 Map JSON, marker images, contours and ballistic configuration keep their
 existing paths on the application host.
 
-The tile loader requests images with `crossOrigin = 'anonymous'`. R2 must return
-an `Access-Control-Allow-Origin` header matching the page origin for `GET` and
-`HEAD` requests. Allow `https://wardogs-artillery.com` and, for local development,
-`http://localhost:8000`. Add `http://127.0.0.1:8000` or a LAN origin if using those
-addresses; the port is part of the origin.
+The tile loader requests images with `crossOrigin = 'anonymous'`. The upstream
+CDN only returns CORS headers for the official site, so the Docker image rewrites
+these URLs to the same-origin `/cdn/` path and proxies them (see
+`docker/prepare-selfhost.mjs`). The development server loads them directly and
+therefore needs an origin the CDN allows, such as `http://localhost:8000`.
 
 `maps/tiles/` is local working data: Git ignores new files there and the build
 excludes the entire directory from `dist/`, even when a local tile copy exists.

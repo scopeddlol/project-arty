@@ -186,7 +186,7 @@ function versionHtml(
  * generated desktop/mobile/localized page gets the exact same tracker policy.
  *
  * `data-domains` prevents an updated copy of the site from reporting to this
- * Umami website when served from localhost, GitHub Pages, a mirror, or a fork.
+ * Umami website when served from localhost, a mirror, or a fork.
  *
  * `data-performance` enables Umami's real-user performance measurements.
  */

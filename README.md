@@ -1,92 +1,116 @@
-# WARDOGS Artillery Calculator
+<p align="center">
+  <img src="docs/images/banner.webp" alt="PROJECT: ARTY - WARDOGS Artillery Calculator" width="100%">
+</p>
 
-[![Live App](https://img.shields.io/badge/Live-wardogs--artillery.com-d7a452?style=flat-square)](https://wardogs-artillery.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-[![Vanilla JS](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=000)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![GitHub Pages](https://img.shields.io/badge/Hosted_on-GitHub_Pages-222?style=flat-square&logo=github)](https://pages.github.com/)
+<p align="center">
+  <a href="https://github.com/scopeddlol/project-arty/actions/workflows/docker.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/scopeddlol/project-arty/docker.yml?branch=main&style=for-the-badge&label=build&labelColor=15191c&color=d7a452"></a>
+  <a href="https://github.com/scopeddlol/project-arty/pkgs/container/project-arty"><img alt="GHCR" src="https://img.shields.io/badge/ghcr.io-project--arty-d7a452?style=for-the-badge&logo=docker&logoColor=white&labelColor=15191c"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-d7a452?style=for-the-badge&labelColor=15191c"></a>
+</p>
 
-A lightweight, open-source **L81 Mortar** and **SPH-2** artillery calculator, live team map, and tactical planning tool for **WARDOGS**.
+<p align="center">
+  <b>A self-hosted L81 Mortar and SPH-2 artillery calculator and tactical map for WARDOGS.</b><br>
+  One container. Any hostname. No accounts, no tracking.
+</p>
 
-**Live app:** https://wardogs-artillery.com/  
-**Mobile UI:** https://wardogs-artillery.com/mobile/  
+<p align="center">
+  <img src="docs/images/desktop.webp" alt="PROJECT: ARTY desktop interface with an L81 Mortar firing solution on Ozeti" width="100%">
+</p>
 
 <table>
   <tr>
-    <th width="72%">Desktop</th>
-    <th width="28%">Mobile</th>
+    <td width="70%"><img src="docs/images/desktop-light.webp" alt="Light theme with an SPH-2 firing solution on Bakurani"></td>
+    <td width="30%"><img src="docs/images/mobile.webp" alt="Mobile interface with the firing-solution HUD"></td>
   </tr>
   <tr>
-    <td align="center">
-      <img src="assets/preview.png" alt="WARDOGS Artillery Calculator — Desktop">
-    </td>
-    <td align="center">
-      <img src="assets/preview_mobile.png" alt="WARDOGS Artillery Calculator — Mobile">
-    </td>
+    <td align="center"><sub>Light theme · SPH-2 with low and high arc</sub></td>
+    <td align="center"><sub>Mobile · touch-first map</sub></td>
   </tr>
 </table>
 
----
+## Quick start
 
-## Interfaces
+```bash
+curl -O https://raw.githubusercontent.com/scopeddlol/project-arty/main/docker-compose.yml
+docker compose up -d
+```
 
-The project ships two interfaces from the same repository and GitHub Pages deployment:
+Open **http://localhost:8080**. Phones are sent to the mobile interface
+automatically.
 
-- **Desktop** — `/`
-- **Mobile** — `/mobile/`
+Update with `docker compose pull && docker compose up -d`. Port, tile source and
+cache size can be changed in a `.env` file; see [Self-hosting](docs/self-hosting.md).
 
-Phones are automatically routed from the desktop entry pages to the matching mobile route. The mobile UI is a separate map-first interface with touch panning, pinch zoom, touch-friendly point placement, Map Tools, and a bottom-sheet calculator.
+## Features
 
-Both interfaces reuse the same calculator logic, maps, tile pyramid, configuration, translations, saved targets, drawings, browser storage, and optional live team lobbies.
+- **Firing solutions:** distance, azimuth and MIL for the L81 Mortar
+  (132–684 m) and SPH-2 (780–2629 m, low and high arc), with in-range status.
+- **Calibrated maps:** Bakurani, Ozeti and Zestafona use in-game coordinates,
+  spawns, markers and contour overlays.
+- **Terrain3D:** elevation lookup and ΔZ context for the SPH-2.
+- **Map Tools:** ruler, pencil, zones, polygons, markers, coordinate search,
+  adjust-fire and layers. Undo/redo and JSON import/export are included.
+- **Saved targets:** store, export and import target lists.
+- **Desktop and mobile:** a full sidebar layout, plus a separate map-first
+  touch UI with pinch zoom and a bottom sheet.
+- **13 languages,** with light and dark themes and accessibility settings.
+- **Self-host friendly:** map tiles are proxied and cached by the container, so
+  it works on any domain or LAN address, even plain HTTP.
 
-## Live Team Lobbies
+## How it works
 
-Create a lobby and share its invite link or code to plan on the same tactical map. Drawings, zones, polygons, and user markers synchronise live. Every player keeps a separate weapon, artillery point, target, and range circle; teammates see labelled player positions without duplicate range circles.
+```text
+Browser ──► nginx (container, :8080)
+              ├── /           static app (HTML, JS, CSS, JSON)
+              └── /cdn/…      map tiles + terrain ──► upstream asset CDN
+                                  cached on the cdn-cache volume
+```
 
-Lobby traffic starts only after a player creates or joins a room. See [Collaborative lobbies](docs/lobbies.md) for deployment, privacy, recovery, limits, and Cloudflare configuration.
+The image runs as a non-root user on a read-only filesystem, with a health check
+at `/healthz`. It makes no third-party requests from the browser.
 
-## Localization
+## Development
 
-The shared locale system supports English, Russian, Ukrainian, German, French, Spanish, Polish, Portuguese, Simplified Chinese, Korean, Japanese, Czech, and the non-indexed Cat locale.
+```bash
+npm run dev      # live-reloading dev server on http://localhost:8000
+npm run check    # unit tests + production build + build verification
+docker compose up -d --build   # build and run the container locally
+```
+
+Node.js 22+ is only needed for development; the project has no npm
+dependencies. Pushes to `main` publish `ghcr.io/scopeddlol/project-arty:latest`,
+and `v*` tags publish versioned images.
 
 ## Documentation
 
-Detailed documentation is split into focused files to keep this README concise.
-
-- [Features & weapons](docs/features.md) — calculator features, Map Tools, weapons, touch controls, and coordinate system
-- [Maps](docs/maps.md) — map configuration, tile structure, bounds, marker zoom visibility, and adding new maps
-- [Mobile interface](docs/mobile.md) — mobile routes, automatic routing, touch controls, and deployment architecture
-- [Localization](docs/localization.md) — supported languages, shared translations, automatic language selection, localized URLs, and SEO metadata
-- [Development](docs/development.md) — project structure, local development, unified build process, and GitHub Pages deployment
-- [Analytics](docs/analytics.md) — Umami custom events, event payloads, debouncing, and privacy considerations
-- [Message of the Day](docs/motd.md) — MOTD configuration, localization, and behavior
-- [Collaborative lobbies](docs/lobbies.md) — live team map behaviour, Cloudflare deployment, limits, privacy, and recovery
-- [Security hardening](docs/security.md) — public-source threat model, Cloudflare headers, secrets, CI, and residual risks
-- [Contributing](docs/contributing.md) — contribution guidelines
-- [License & Disclaimer](docs/legal.md) — MIT scope, third-party assets, and project disclaimer
-
-## Quick Start
-
-```bash
-npm run build
-cd dist
-python -m http.server 8000
-```
-
-Then open:
-
-```text
-Desktop:            http://localhost:8000/
-Mobile:             http://localhost:8000/mobile/
-```
+| Guide | Covers |
+| --- | --- |
+| [Self-hosting](docs/self-hosting.md) | Compose, configuration, updates, HTTPS, image publishing |
+| [Development](docs/development.md) | Project structure, dev server, tests, build pipeline |
+| [Features](docs/features.md) | Calculator, Map Tools, shortcuts, weapons, coordinate system |
+| [Maps](docs/maps.md) | Map definitions, tiles, markers and adding a map |
+| [Terrain](docs/terrain.md) | Terrain3D data, SPH-2 leveling and validation |
+| [Mobile](docs/mobile.md) | Mobile routes, touch controls and QA viewports |
+| [Localization](docs/localization.md) | Languages, localized routes and translations |
+| [Message of the Day](docs/motd.md) | In-app announcement configuration |
 
 ## Contributing
 
-Corrections, map data improvements, localization updates, bug fixes, and QoL improvements are welcome.
+Corrections and improvements are welcome: map calibration, markers, weapon
+data, translations, bug fixes and UI polish. Edit sources under `src/pages/`,
+`js/`, `styles/` and `locales/` (never `dist/`), run `npm run check`, and open a
+pull request.
 
-See [Contributing](docs/contributing.md) for details.
+## Credits and license
 
-## License
+PROJECT: ARTY is based on the
+[WARDOGS Artillery Calculator](https://github.com/apollyon-sys/wardogs-calculator)
+by **Apollyon**. Map imagery and terrain data are served from that project's
+asset CDN.
 
-Original project source code is licensed under the [MIT License](LICENSE).
+The original source code is released under the [MIT License](LICENSE). WARDOGS
+game assets, map imagery, names, logos and trademarks are **not** covered by the
+MIT License and remain the property of their respective owners.
 
-WARDOGS assets and other third-party materials are not covered by the MIT License. See [License & Disclaimer](docs/legal.md) for details.
+> **Unofficial fan project.** PROJECT: ARTY is not affiliated with, endorsed by
+> or officially associated with **BULKHEAD** or the **WARDOGS** development team.

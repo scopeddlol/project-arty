@@ -38,13 +38,37 @@ header {
     object-fit: cover;
 }
 
+.header-brand-copy {
+    display: grid;
+    gap: 3px;
+
+    min-width: 0;
+}
+
 header h1 {
     font-size: 16px;
-    letter-spacing: .08em;
+    line-height: 1;
+    letter-spacing: .14em;
 
     margin: 0;
 
     white-space: nowrap;
+}
+
+.brand-accent {
+    color: var(--accent);
+}
+
+.header-brand-copy > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--muted);
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: .12em;
 }
 
 .header-controls {

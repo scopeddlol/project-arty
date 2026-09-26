@@ -1,0 +1,17 @@
+.git
+.github
+.idea
+.vscode
+**/node_modules
+dist
+docs
+**/.env
+**/.env.*
+*.pem
+*.key
+maps/tiles
+data/terrain/**/*.bin
+docker-compose.yml
+Dockerfile
+.dockerignore
+README.md

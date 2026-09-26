@@ -77,6 +77,11 @@ body.mobile-app {
     font-size: 13px;
     line-height: 1.05;
     letter-spacing: .14em;
+    white-space: nowrap;
+}
+
+.mobile-brand-copy .brand-accent {
+    color: var(--accent);
 }
 
 .mobile-brand-copy > span {

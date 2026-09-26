@@ -2,13 +2,13 @@
 
 The mobile interface is a separate map-first UI built from the same repository as the desktop application.
 
-It is published inside the same GitHub Pages artifact:
+It is served by the same container as the desktop interface:
 
 ```text
-https://wardogs-artillery.com/mobile/
+http://<your-host>:8080/mobile/
 ```
 
-There is no separate `m.` subdomain, repository, tile set, locale set, or deployment.
+There is no separate subdomain, repository, tile set, locale set, or deployment.
 
 ## Architecture
 
@@ -114,20 +114,8 @@ The map canvas uses Pointer Events and disables native touch gestures on the can
 
 ## Local Development
 
-Build the complete site once:
-
-```bash
-npm run build
-```
-
-Then serve the single output directory:
-
-```bash
-cd dist
-python -m http.server 8000
-```
-
-Open:
+Run the development server (see [Development](development.md)) or the container
+(see [Self-hosting](self-hosting.md)) and open:
 
 ```text
 http://localhost:8000/mobile/
@@ -151,23 +139,9 @@ Mobile QA for every supported locale should include at least one narrow-phone vi
 
 ## Deployment
 
-The mobile interface requires no separate hosting configuration.
-
-GitHub Actions runs:
-
-```bash
-npm run build
-```
-
-and deploys the single `dist/` directory. The build produces desktop and mobile entry pages while copying large shared resources such as map tiles only once.
-
-The locale synchronization step publishes generated desktop and mobile locale routes, synchronizes localized SEO metadata and sitemap coverage, and the asset-versioning step fingerprints the final JS/CSS references.
-
-The only Pages custom domain remains:
-
-```text
-wardogs-artillery.com
-```
+The mobile interface requires no separate hosting configuration. `npm run build`
+produces desktop and mobile entry pages in the single `dist/` directory, which
+the Docker image serves as-is.
 
 ## Saved target transfer
 

@@ -705,7 +705,7 @@ function createSourceCodeLink(placement = 'footer') {
                 ?.footer
                 ?.sourceCodeUrl
         ) ||
-        'https://github.com/apollyon-sys/wardogs-calculator';
+        'https://github.com/scopeddlol/project-arty';
 
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
@@ -831,7 +831,7 @@ function renderFooter() {
     const productName =
         String(
             config.productName ||
-            'WARDOGS Artillery Calculator'
+            'PROJECT: ARTY · WARDOGS Artillery Calculator'
         );
 
     const authorLabel =

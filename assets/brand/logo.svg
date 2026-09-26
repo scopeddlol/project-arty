@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PROJECT: ARTY">
+  <defs>
+    <linearGradient id="arty-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252d33"/>
+      <stop offset="1" stop-color="#0b0f12"/>
+    </linearGradient>
+    <linearGradient id="arty-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7dc9c"/>
+      <stop offset="1" stop-color="#c38a35"/>
+    </linearGradient>
+  </defs>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="url(#arty-bg)"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14" fill="none" stroke="#d7a452" stroke-opacity=".5" stroke-width="1.5"/>
+  <path d="M9.5 54 Q13 13 26.5 27.5" fill="none" stroke="url(#arty-gold)" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="0.01 6.4"/>
+  <circle cx="38" cy="38" r="12.5" fill="none" stroke="url(#arty-gold)" stroke-width="3.8"/>
+  <path d="M38 19.5v8M38 48.5v8M19.5 38h8M48.5 38h8" stroke="url(#arty-gold)" stroke-width="3.8" stroke-linecap="round"/>
+  <circle cx="38" cy="38" r="3.6" fill="#f7dc9c"/>
+</svg>
