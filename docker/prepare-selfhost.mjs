@@ -1,22 +1,26 @@
 /*
- * Adapts the production `dist/` artifact for self-hosting behind the bundled
- * nginx container. Run after `npm run build` and `npm run test:build`.
+ * Adapts the production `dist/` artifact for the self-hosted container.
+ * Run after `npm run build` and `npm run test:build`.
  *
- * - Map tiles and Terrain3D data are rewritten to the same-origin `/cdn/`
- *   prefix. nginx proxies and caches that prefix from the upstream asset CDN,
- *   so the app works on any hostname without CDN CORS changes.
- * - Collaborative lobbies and feedback are disabled. The hosted Worker only
- *   accepts the official site origin, so the buttons could never succeed.
+ * - Collaborative lobbies and feedback stay disabled; they depend on the
+ *   upstream project's Cloudflare service.
  * - Umami analytics and every third-party origin are removed from the CSP.
  *   `upgrade-insecure-requests` is dropped so plain-HTTP LAN installs work;
  *   TLS is left to the reverse proxy in front of the container.
+ * - The app pages load a small notice that explains blank maps when the
+ *   admin has not installed map imagery (see docker/assets-notice.js).
+ *
+ * The build fails if any reference to the upstream asset CDN remains: map
+ * assets must come from the admin's own map-assets folder.
  */
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { extname, join, relative, resolve } from 'node:path';
+import { copyFile, readdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, extname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const CDN_ORIGIN = 'https://assets.wardogs-artillery.com';
-const CDN_PREFIX = '/cdn';
+const UPSTREAM_ASSET_HOST = 'assets.wardogs-artillery.com';
+const NOTICE_SCRIPT = 'js/assets-notice.js';
 
+const here = dirname(fileURLToPath(import.meta.url));
 const dist = resolve(process.argv[2] || 'dist');
 
 async function* walk(directory) {
@@ -25,10 +29,6 @@ async function* walk(directory) {
         if (entry.isDirectory()) yield* walk(path);
         else yield path;
     }
-}
-
-function rewriteCdnUrls(text) {
-    return text.replaceAll(`${CDN_ORIGIN}/`, `${CDN_PREFIX}/`);
 }
 
 function sameOriginPolicy(policy) {
@@ -45,13 +45,22 @@ function sameOriginPolicy(policy) {
 }
 
 function adaptHtml(html) {
-    return html
+    let output = html
         .replace(
             /<meta content="([^"]*)" http-equiv="Content-Security-Policy"\/>/gi,
             (_, policy) => `<meta content="${sameOriginPolicy(policy)}" http-equiv="Content-Security-Policy"/>`
         )
-        .replace(/\s*<script\b[^>]*\bsrc="https:\/\/cloud\.umami\.is\/[^"]*"[^>]*><\/script>/gi, '')
-        .replace(/\s*<link\b[^>]*href="(?:https:)?\/\/assets\.wardogs-artillery\.com"[^>]*\/?>/gi, '');
+        .replace(/\s*<script\b[^>]*\bsrc="https:\/\/cloud\.umami\.is\/[^"]*"[^>]*><\/script>/gi, '');
+
+    // Only the calculator pages (desktop and mobile) have a map to explain.
+    if (output.includes('id="mapSelect"') && !output.includes(NOTICE_SCRIPT)) {
+        output = output.replace(
+            /<\/body>/i,
+            `<script defer src="${NOTICE_SCRIPT}"></script>\n</body>`
+        );
+    }
+
+    return output;
 }
 
 function adaptConfig(json) {
@@ -60,6 +69,8 @@ function adaptConfig(json) {
     if (config.feedback) config.feedback.enabled = false;
     return `${JSON.stringify(config, null, 2)}\n`;
 }
+
+await copyFile(join(here, 'assets-notice.js'), join(dist, NOTICE_SCRIPT));
 
 const changed = [];
 const leftovers = [];
@@ -73,15 +84,14 @@ for await (const path of walk(dist)) {
     let updated = original;
 
     if (name === 'config/app.json') updated = adaptConfig(updated);
-    else if (extension === '.json') updated = rewriteCdnUrls(updated);
-    else updated = adaptHtml(updated);
+    else if (extension === '.html') updated = adaptHtml(updated);
 
     if (updated !== original) {
         await writeFile(path, updated, 'utf8');
         changed.push(name);
     }
 
-    if (updated.includes(CDN_ORIGIN) || updated.includes('cloud.umami.is')) {
+    if (updated.includes(UPSTREAM_ASSET_HOST) || updated.includes('cloud.umami.is')) {
         leftovers.push(name);
     }
 }

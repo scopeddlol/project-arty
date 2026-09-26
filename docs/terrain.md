@@ -91,37 +91,21 @@ The binary terrain chunks contain only elevation samples. They are not map-image
 
 ### Terrain3D hosting
 
-The application loads published manifests and chunks from Cloudflare R2 under:
+The application loads each map's manifest from
+`data/terrain/<map-id>/manifest.json` and resolves chunk filenames relative to
+it. Terrain data is not part of this repository or the Docker image; provide
+your own legally obtained manifest and chunks:
 
-```text
-https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/<map-id>/
-```
+- **Docker:** in the `map-assets` folder, under `data/terrain/<map-id>/`
+  (see [Self-hosting](self-hosting.md#map-assets)).
+- **Development server:** in `data/terrain/<map-id>/` in your checkout.
 
-Upload each map's `manifest.json` and every referenced `.bin`, retaining the
-relative `chunks/...` paths. Set both the multi-map registry entries and the
-legacy top-level `terrainManifest` field to full HTTPS manifest URLs. The
-existing loader resolves chunk filenames relative to the manifest URL;
-coordinate mapping, height decoding, memory caching and correction policy are
-unchanged.
+Keep the relative `chunks/...` paths the manifest references. The build excludes
+`data/terrain/**/*.bin`, and Git ignores it. Local manifests remain tracked for
+the toolchain, and `contours.json` ships with the application.
 
-The current R2 release contains Bakurani, Ozeti and Zestafona. The build excludes
-`data/terrain/**/*.bin` even when binaries are present locally. Git ignores new
-binaries there; removing already tracked binaries requires a separate index
-change after upload and runtime verification. Local manifests remain tracked
-for the toolchain, and `contours.json` stays on the application host. Keep the
-`data/terrain/` directory.
-
-Allow the application origin and local development origins in R2 CORS for
-`GET` and `HEAD`, as with map tiles. The `/releases/` cache rule must cover JSON
-and BIN objects too. Chunk requests use the browser's normal HTTP cache and the
-runtime's per-map memory cache. The existing manifest/config loader uses
-`cache: 'no-store'`; this migration does not change that behavior.
-
-Verify the complete upload before activating the registry URLs. An unavailable
-map manifest or chunk keeps the existing flat-table fallback; other maps can
-still use successfully loaded terrain. For later dataset updates, publish and
-verify a new versioned prefix first, then change the registry URLs. Keep
-previously published release objects unchanged.
+An unavailable manifest or chunk keeps the existing flat-table fallback; other
+maps can still use successfully loaded terrain.
 
 `contours.json` is generated, not extracted. `npm run build-contours` samples
 the chunks on a 4 m grid across the map's playable bounds and writes 20 m
@@ -147,16 +131,16 @@ Example shape:
 ```json
 {
   "mapId": "bakurani",
-  "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/bakurani/manifest.json",
+  ,
   "terrainMaps": {
     "bakurani": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/bakurani/manifest.json"
+      "terrainManifest": "data/terrain/bakurani/manifest.json"
     },
     "ozeti": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/ozeti/manifest.json"
+      "terrainManifest": "data/terrain/ozeti/manifest.json"
     },
     "zestafona": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/zestafona/manifest.json"
+      "terrainManifest": "data/terrain/zestafona/manifest.json"
     }
   }
 }
@@ -338,10 +322,10 @@ and add one entry to `terrainMaps` in:
 data/ballistics/terrain-context.json
 ```
 
-Publish the manifest and binaries to R2 and use the full public manifest URL in
-that entry. Uploading files does not register the map by itself. Keep its local
-manifest and binaries available when regenerating contours; restore binaries
-from the matching R2 release if the local copy was removed.
+Set that entry to `data/terrain/<map-id>/manifest.json` and provide the manifest
+and binaries through your `map-assets` folder. Adding files does not register the
+map by itself. Keep the local manifest and binaries available when regenerating
+contours.
 
 The map dataset must define:
 

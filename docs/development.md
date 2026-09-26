@@ -14,8 +14,9 @@ project-arty/
 │   └── terrain/               # terrain manifests + generated contour overlays
 ├── docker/
 │   ├── nginx.conf             # nginx main config (read-only-rootfs friendly)
-│   ├── templates/             # site config rendered at container start
-│   ├── 16-wardogs-env.envsh   # validates ASSET_UPSTREAM / CDN_CACHE_MAX_SIZE
+│   ├── arty.conf              # site config: app + admin map-assets folder
+│   ├── 40-arty-assets.sh      # startup report of installed map assets
+│   ├── assets-notice.js       # in-app notice when a map has no imagery
 │   └── prepare-selfhost.mjs   # adapts dist/ for self-hosting
 ├── docs/                      # documentation and README screenshots
 ├── js/
@@ -55,8 +56,9 @@ them through `application-assets.mjs`, then update the page templates in
 docker compose up -d --build
 ```
 
-Open `http://localhost:8080/`. This is exactly what gets published, including
-the tile proxy, so maps load on any hostname.
+Open `http://localhost:8080/`. This is exactly what gets published. Map
+imagery comes from your `map-assets` folder; see
+[Self-hosting](self-hosting.md#map-assets).
 
 ### Development server
 
@@ -67,9 +69,10 @@ npm run dev
 ```
 
 Open `http://localhost:8000/`. Pages reload automatically when source files
-change. The development server loads map tiles and Terrain3D data straight from
-the upstream CDN, which only allows `http://localhost:8000` and
-`http://127.0.0.1:8000`; use Docker to test from any other address.
+change. The development server serves map tiles from `maps/tiles/` and
+`maps/tiles-color/`, and Terrain3D chunks from `data/terrain/<map-id>/`, in your
+checkout. Those files are ignored by Git; supply your own, using the layout in
+[Self-hosting](self-hosting.md#map-assets).
 
 Analytics are disabled in the development server. To test on another device:
 
@@ -101,15 +104,16 @@ scripts/build-pages.mjs  →  scripts/sync-locales.mjs  →  scripts/version-ass
 ```
 
 1. **`build-pages.mjs`** clears `dist/`; copies assets, JS, locales, map JSON,
-   config and data (skipping tiles and terrain binaries, which come from the
-   CDN); bundles CSS and JS; and creates the desktop, mobile and map landing
-   routes.
+   config and data (never tiles or terrain binaries, which each admin
+   supplies); bundles CSS and JS; and creates the desktop, mobile and map
+   landing routes.
 2. **`sync-locales.mjs`** generates localized desktop and mobile routes and their
    metadata from `locales/index.json`.
 3. **`version-assets.mjs`** fingerprints JS, CSS and JSON with a build hash
    (`?v=<hash>`) and updates every HTML route.
-4. **`docker/prepare-selfhost.mjs`** rewrites CDN URLs to `/cdn/`, removes
-   analytics and third-party CSP origins, and disables lobbies and feedback. See
+4. **`docker/prepare-selfhost.mjs`** removes analytics and third-party CSP
+   origins, disables lobbies and feedback, adds the missing-imagery notice, and
+   fails if any upstream asset URL remains. See
    [Self-hosting](self-hosting.md#how-it-differs-from-wardogs-artillerycom).
 
 Do not edit files inside `dist/`; they are regenerated on every build.

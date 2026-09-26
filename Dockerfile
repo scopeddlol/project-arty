@@ -15,26 +15,22 @@ RUN npm run test:scripts \
  && node docker/prepare-selfhost.mjs dist
 
 # ---- Runtime: unprivileged nginx -----------------------------------------
+# Map tiles and Terrain3D data are NOT part of the image. Mount your own
+# assets at /srv/arty-assets (see docs/self-hosting.md#map-assets).
 FROM nginxinc/nginx-unprivileged:1.30-alpine
 
 LABEL org.opencontainers.image.title="PROJECT: ARTY - WARDOGS Artillery Calculator" \
       org.opencontainers.image.description="Self-hosted L81 Mortar and SPH-2 artillery calculator and tactical map for WARDOGS." \
       org.opencontainers.image.licenses="MIT"
 
-ENV ASSET_UPSTREAM=https://assets.wardogs-artillery.com \
-    CDN_CACHE_MAX_SIZE=2g \
-    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
-    NGINX_ENVSUBST_OUTPUT_DIR=/tmp
-
 USER root
 RUN rm -f /etc/nginx/conf.d/default.conf \
- && mkdir -p /var/cache/nginx/cdn \
- && chown -R nginx:nginx /var/cache/nginx/cdn
+ && mkdir -p /srv/arty-assets
 USER 101
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/templates/ /etc/nginx/templates/
-COPY --chmod=0755 docker/16-arty-env.envsh /docker-entrypoint.d/
+COPY docker/arty.conf /etc/nginx/arty.conf
+COPY --chmod=0755 docker/40-arty-assets.sh /docker-entrypoint.d/
 COPY --from=build /src/dist/ /usr/share/nginx/html/
 
 EXPOSE 8080

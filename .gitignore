@@ -11,8 +11,10 @@ node_modules/
 *.pfx
 Trace-*.json
 
-# Map tiles and Terrain3D binaries are served from the asset CDN (proxied by
-# the container under /cdn/). Keep local manifests and generated contours in
+# Map imagery and Terrain3D data are supplied by each admin and must never be
+# committed or redistributed. Keep local manifests and generated contours in
 # Git for the toolchain.
+/map-assets/
 /maps/tiles/
+/maps/tiles-color/
 /data/terrain/**/*.bin

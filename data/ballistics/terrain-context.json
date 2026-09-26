@@ -5,16 +5,16 @@
   "weaponId": "spg",
   "ammo": "155MM HE SHELL",
   "arc": "full-range",
-  "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/bakurani/manifest.json",
+  "terrainManifest": "data/terrain/bakurani/manifest.json",
   "terrainMaps": {
     "bakurani": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/bakurani/manifest.json"
+      "terrainManifest": "data/terrain/bakurani/manifest.json"
     },
     "ozeti": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/ozeti/manifest.json"
+      "terrainManifest": "data/terrain/ozeti/manifest.json"
     },
     "zestafona": {
-      "terrainManifest": "https://assets.wardogs-artillery.com/releases/assets-v1/data/terrain/zestafona/manifest.json"
+      "terrainManifest": "data/terrain/zestafona/manifest.json"
     }
   },
   "releasePolicy": {

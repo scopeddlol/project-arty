@@ -39,13 +39,13 @@ English pages use `<base href="../../">`; localized pages use `<base href="../..
 
 ### Bakurani
 
-Bakurani uses a multi-resolution WebP tile pyramid published to the upstream
-asset CDN (Cloudflare R2). The Docker image proxies and caches it under `/cdn/`;
-see [Self-hosting](self-hosting.md).
-Object keys in the `wardogs-assets` bucket have this structure:
+Bakurani uses a multi-resolution WebP tile pyramid. Tiles are not part of this
+repository or the Docker image; each admin supplies their own in the
+`map-assets` folder (see [Self-hosting](self-hosting.md#map-assets)) with this
+structure:
 
 ```text
-releases/assets-v1/maps/tiles/bakurani/
+maps/tiles/bakurani/
 ├── zoom_0/
 ├── zoom_1/
 ├── zoom_2/
@@ -82,7 +82,7 @@ Map configuration can define coordinate bounds:
     "coordinateMetersPerUnit": 100,
 
     "tiles": {
-        "path": "https://assets.wardogs-artillery.com/releases/assets-v1/maps/tiles/bakurani",
+        "path": "maps/tiles/bakurani",
         "tileSize": 256,
         "minZoom": 0,
         "maxZoom": 7,
@@ -101,32 +101,23 @@ Map calibration is based on available in-game reference data and may be refined 
 
 ### Tile hosting
 
-Bakurani, Ozeti and Zestafona use absolute `tiles.path` URLs under
-`https://assets.wardogs-artillery.com/releases/assets-v1/maps/tiles/`.
-Desktop, mobile and localized pages share these URLs. Terrain3D manifests and
-chunks use R2 as described in [Terrain3D hosting](terrain.md#terrain3d-hosting).
-Map JSON, marker images, contours and ballistic configuration keep their
-existing paths on the application host.
+`tiles.path` (and each entry under `tiles.styles`) is a path relative to the
+site root, for example `maps/tiles/bakurani` and `maps/tiles-color/bakurani`.
+Tiles are requested as `<path>/zoom_<z>/<x>_<y>.<extension>`, where `zoom_0` is a
+single tile covering the whole map and each level doubles the tiles per side up
+to `maxZoom`.
 
-The tile loader requests images with `crossOrigin = 'anonymous'`. The upstream
-CDN only returns CORS headers for the official site, so the Docker image rewrites
-these URLs to the same-origin `/cdn/` path and proxies them (see
-`docker/prepare-selfhost.mjs`). The development server loads them directly and
-therefore needs an origin the CDN allows, such as `http://localhost:8000`.
+This project does not ship, download or proxy map imagery. Provide your own
+legally obtained tiles:
 
-`maps/tiles/` is local working data: Git ignores new files there and the build
-excludes the entire directory from `dist/`, even when a local tile copy exists.
-Already tracked tiles must be removed from Git's index separately after checking
-the CDN upload and the application. Ignoring files does not remove Git history.
+- **Docker:** put them in the `map-assets` folder, which is mounted read-only
+  and served at `/maps/tiles/` and `/maps/tiles-color/`.
+- **Development server:** put them in `maps/tiles/` and `maps/tiles-color/` in
+  your checkout.
 
-To update imagery, upload and verify a complete new release prefix first, then
-change the map JSON URLs (for example, to `releases/assets-v2/`). Keep published
-release objects unchanged so long-lived caches cannot mix old and new tiles.
-The example map's relative path can be used for local tile development; give any
-registered production map a published tile URL before deployment.
-
-These URLs are public. Moving tiles out of Git reduces the checkout and build
-size, but CORS does not prevent downloading or copying browser-visible assets.
+Both locations are ignored by Git and excluded from the build and the Docker
+build context, so imagery is never committed or baked into an image. A missing
+tile simply leaves that part of the map blank; the calculator keeps working.
 
 ---
 
@@ -142,12 +133,12 @@ data/terrain/bakurani/
     └── *.bin
 ```
 
-The manifest describes how map coordinates resolve into terrain chunks and how stored height values are converted to elevation. The runtime loads only the chunks needed for the current Artillery and Target positions from R2 and caches them for later samples.
+The manifest describes how map coordinates resolve into terrain chunks and how stored height values are converted to elevation. The runtime loads only the chunks needed for the current Artillery and Target positions and caches them for later samples.
 
-Bakurani, Ozeti and Zestafona publish their manifest and chunks together under
-`releases/assets-v1/data/terrain/<map-id>/`. Full manifest URLs are registered
-in `data/ballistics/terrain-context.json`. Local `.bin` files are excluded from
-the build; manifests and generated contours remain in the repository.
+Manifest paths are registered in `data/ballistics/terrain-context.json` as
+`data/terrain/<map-id>/manifest.json`. Chunk binaries are supplied by each
+admin (see [Self-hosting](self-hosting.md#map-assets)) and are excluded from
+Git and the build; manifests and generated contours remain in the repository.
 
 Terrain sampling is used to provide elevation context for SPH-2:
 
@@ -238,9 +229,9 @@ maps/index.json
 maps/tiles/my-map/
 ```
 
-4. Upload the tile pyramid to R2 under a versioned release prefix and set
-   `tiles.path` to its full public HTTPS URL. Local tiles are excluded from the
-   production build.
+4. Set `tiles.path` to `maps/tiles/<map-id>` and provide the tiles through your
+   `map-assets` folder (Docker) or `maps/tiles/` (development server). Tiles are
+   never committed or included in the build.
 
 5. If the map needs an indexable landing page, add a unique, fact-checked English definition to `scripts/map-landing-pages.mjs`, add reviewed translations to `scripts/map-landing-locales.mjs`, link it from the relevant English homepage SEO section, then run the build and SEO smoke test. Do not publish mechanical translations or copy another map's text with only the name changed.
 

@@ -19,11 +19,14 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const dist = join(root, 'dist');
-const localTilesDirectory = join(root, 'maps', 'tiles');
+const localTileDirectories = new Set([
+    join(root, 'maps', 'tiles'),
+    join(root, 'maps', 'tiles-color')
+]);
 const localTerrainPrefix = join(root, 'data', 'terrain') + sep;
 
 function includeSharedSource(sourcePath) {
-    if (sourcePath === localTilesDirectory) return false;
+    if (localTileDirectories.has(sourcePath)) return false;
     if (!sourcePath.startsWith(localTerrainPrefix)) return true;
 
     const terrainParts = sourcePath
@@ -34,7 +37,7 @@ function includeSharedSource(sourcePath) {
     /*
      * Keep map directories traversable and publish only the precomputed,
      * lightweight contour overlay. Terrain manifests and binary chunks are
-     * loaded from R2 and must not enter the build artifact.
+     * supplied by each admin and must not enter the build artifact.
      */
     return terrainParts.length === 1 || (
         terrainParts.length === 2 &&
@@ -87,9 +90,6 @@ const mobileStyleFiles = [
 const desktopScriptFiles = DESKTOP_SCRIPT_FILES;
 const mobileScriptFiles = MOBILE_SCRIPT_FILES;
 
-const ASSET_CDN_ORIGIN =
-    'https://assets.wardogs-artillery.com';
-
 async function exists(path) {
     try {
         await stat(path);
@@ -124,7 +124,6 @@ function addProductionSecurityMeta(html, appConfig) {
     const turnstileEnabled = collab.turnstile?.enabled === true;
     const connectSources = new Set([
         "'self'",
-        'https://assets.wardogs-artillery.com',
         'https://cloud.umami.is',
         'https://gateway.umami.is'
     ]);
@@ -159,8 +158,7 @@ function addProductionSecurityMeta(html, appConfig) {
     const imageSources = [
         "'self'",
         'data:',
-        'blob:',
-        'https://assets.wardogs-artillery.com'
+        'blob:'
     ];
     if (turnstileEnabled) imageSources.push('https://challenges.cloudflare.com');
 
@@ -338,26 +336,6 @@ function replaceApplicationScripts(
     }
 
     return output;
-}
-
-function addAssetConnectionHints(html) {
-    if (
-        html.includes(
-            `href="${ASSET_CDN_ORIGIN}" rel="preconnect"`
-        )
-    ) {
-        return html;
-    }
-
-    const hints = [
-        `<link crossorigin href="${ASSET_CDN_ORIGIN}" rel="preconnect"/>`,
-        '<link href="//assets.wardogs-artillery.com" rel="dns-prefetch"/>'
-    ].join('\n');
-
-    return html.replace(
-        /(<meta\b[^>]*\bcharset\s*=\s*["'][^"']+["'][^>]*>)/i,
-        `$1\n${hints}`
-    );
 }
 
 async function copySharedStatic() {
@@ -715,18 +693,16 @@ async function writeDesktopPage(source, target, appConfig, language) {
     const prepared =
         replaceApplicationScripts(
             addProductionSecurityMeta(
-                addAssetConnectionHints(
-                    addMobileAlternate(
-                        applySeoV2(
-                            refreshSeoMetadata(
-                                normalizeDesktopRuntimePlaceholders(html),
-                                appConfig
-                            ),
-                            appConfig,
-                            language
+                addMobileAlternate(
+                    applySeoV2(
+                        refreshSeoMetadata(
+                            normalizeDesktopRuntimePlaceholders(html),
+                            appConfig
                         ),
+                        appConfig,
                         language
-                    )
+                    ),
+                    language
                 ),
                 appConfig
             ),
@@ -990,11 +966,9 @@ async function buildMobilePages() {
         const html =
             replaceApplicationScripts(
                 addProductionSecurityMeta(
-                    addAssetConnectionHints(
-                        renderMobileLocale(
-                            template,
-                            language
-                        )
+                    renderMobileLocale(
+                        template,
+                        language
                     ),
                     appConfig
                 ),

@@ -9,7 +9,9 @@ docs
 **/.env.*
 *.pem
 *.key
+map-assets
 maps/tiles
+maps/tiles-color
 data/terrain/**/*.bin
 docker-compose.yml
 Dockerfile
