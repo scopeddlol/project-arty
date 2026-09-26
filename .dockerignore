@@ -1,12 +1,10 @@
 .git
 .github
 .idea
+.vscode
 **/node_modules
 dist
-dist-mobile
-sync/.wrangler
-**/.dev.vars
-**/.dev.vars.*
+docs
 **/.env
 **/.env.*
 *.pem
@@ -16,3 +14,4 @@ data/terrain/**/*.bin
 docker-compose.yml
 Dockerfile
 .dockerignore
+README.md

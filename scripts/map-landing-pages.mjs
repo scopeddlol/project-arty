@@ -1,4 +1,5 @@
 import { MAP_LANDING_LOCALIZATIONS } from './map-landing-locales.mjs';
+import { brandTitle } from './lib/branding.mjs';
 
 export const MAP_LANDING_PAGES = [
     {
@@ -448,13 +449,15 @@ export function hasMapLandingLanguage(language) {
 }
 
 export function mapLandingPagesForLanguage(language = DEFAULT_MAP_LANDING_LANGUAGE) {
+    const branded = page => ({ ...page, title: brandTitle(page.title) });
+
     if (language === DEFAULT_MAP_LANDING_LANGUAGE) {
-        return MAP_LANDING_PAGES.map(page => ({ ...page, ui: ENGLISH_UI }));
+        return MAP_LANDING_PAGES.map(page => branded({ ...page, ui: ENGLISH_UI }));
     }
 
     const localization = MAP_LANDING_LOCALIZATIONS[language];
     if (!localization) throw new Error(`Missing map landing localization: ${language}`);
-    return MAP_LANDING_PAGES.map(page => localizePage(page, localization));
+    return MAP_LANDING_PAGES.map(page => branded(localizePage(page, localization)));
 }
 
 export function mapLandingPageById(id, language = DEFAULT_MAP_LANDING_LANGUAGE) {

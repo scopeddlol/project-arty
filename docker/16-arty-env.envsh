@@ -6,7 +6,7 @@ ASSET_UPSTREAM="${ASSET_UPSTREAM%/}"
 case "$ASSET_UPSTREAM" in
     http://?*|https://?*) ;;
     *)
-        echo "wardogs: ASSET_UPSTREAM must be an http(s):// URL, got '$ASSET_UPSTREAM'" >&2
+        echo "arty: ASSET_UPSTREAM must be an http(s):// URL, got '$ASSET_UPSTREAM'" >&2
         exit 1
         ;;
 esac
@@ -15,7 +15,7 @@ export ASSET_UPSTREAM
 case "$CDN_CACHE_MAX_SIZE" in
     [0-9]*) ;;
     *)
-        echo "wardogs: CDN_CACHE_MAX_SIZE must look like 2g or 500m, got '$CDN_CACHE_MAX_SIZE'" >&2
+        echo "arty: CDN_CACHE_MAX_SIZE must look like 2g or 500m, got '$CDN_CACHE_MAX_SIZE'" >&2
         exit 1
         ;;
 esac

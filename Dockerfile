@@ -1,9 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Build: generate the static site -------------------------------------
-# The output is plain HTML/JS/CSS, so it is built once on the native platform
-# and copied into every target architecture.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /src
 
@@ -19,7 +17,7 @@ RUN npm run test:scripts \
 # ---- Runtime: unprivileged nginx -----------------------------------------
 FROM nginxinc/nginx-unprivileged:1.30-alpine
 
-LABEL org.opencontainers.image.title="WARDOGS Artillery Calculator" \
+LABEL org.opencontainers.image.title="PROJECT: ARTY - WARDOGS Artillery Calculator" \
       org.opencontainers.image.description="Self-hosted L81 Mortar and SPH-2 artillery calculator and tactical map for WARDOGS." \
       org.opencontainers.image.licenses="MIT"
 
@@ -36,7 +34,7 @@ USER 101
 
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/templates/ /etc/nginx/templates/
-COPY --chmod=0755 docker/16-wardogs-env.envsh /docker-entrypoint.d/
+COPY --chmod=0755 docker/16-arty-env.envsh /docker-entrypoint.d/
 COPY --from=build /src/dist/ /usr/share/nginx/html/
 
 EXPOSE 8080

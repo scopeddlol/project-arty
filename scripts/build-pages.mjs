@@ -10,6 +10,7 @@ import {
 } from './map-landing-pages.mjs';
 import { SEO_ALTERNATE_NAMES, SEO_PAGE_CONTENT } from './seo-content.mjs';
 import { renderSeoGuideContent } from './lib/seo-guide-render.mjs';
+import { brandTitle } from './lib/branding.mjs';
 import {
     DESKTOP_SCRIPT_FILES,
     MOBILE_SCRIPT_FILES
@@ -33,7 +34,7 @@ function includeSharedSource(sourcePath) {
     /*
      * Keep map directories traversable and publish only the precomputed,
      * lightweight contour overlay. Terrain manifests and binary chunks are
-     * loaded from R2 and must not enter the Pages artifact.
+     * loaded from R2 and must not enter the build artifact.
      */
     return terrainParts.length === 1 || (
         terrainParts.length === 2 &&
@@ -55,6 +56,7 @@ const sourceDirs = [
 
 const commonSourceFiles = [
     'robots.txt',
+    'favicon.ico',
     'LICENSE'
 ];
 
@@ -372,13 +374,6 @@ async function copySharedStatic() {
             join(dist, file)
         );
     }
-
-    for (const file of ['CNAME']) {
-        await copyIfExists(
-            join(root, file),
-            join(dist, file)
-        );
-    }
 }
 
 function replaceElementTextById(html, id, value) {
@@ -478,7 +473,7 @@ function replaceSeoTitle(
 
     return html.replace(
         /<title>[\s\S]*?<\/title>/i,
-        `<title>${escapeSeoHtml(title)}</title>`
+        `<title>${escapeSeoHtml(brandTitle(title))}</title>`
     );
 }
 
@@ -1041,18 +1036,12 @@ async function buildMobilePages() {
 }
 
 /*
- * One repository, one Pages artifact, one custom domain.
+ * One repository, one build artifact.
  * Desktop and mobile page shells share the same JS, locales,
  * maps, tiles, configuration and localStorage origin.
  */
 await rm(
     dist,
-    { recursive: true, force: true }
-);
-
-/* Remove the legacy standalone mobile build if it exists. */
-await rm(
-    join(root, 'dist-mobile'),
     { recursive: true, force: true }
 );
 

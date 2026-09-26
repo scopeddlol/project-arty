@@ -69,6 +69,7 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outli
 .brand img { border-radius: 7px; }
 .brand span { display: grid; line-height: 1.1; }
 .brand strong { font-size: 13px; letter-spacing: .12em; }
+.brand .brand-accent { display: inline; color: var(--accent); }
 .brand small { margin-top: 4px; color: var(--muted); font-size: 9px; letter-spacing: .13em; }
 
 .header-actions, .site-footer nav { display: flex; align-items: center; gap: 18px; }

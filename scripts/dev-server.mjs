@@ -53,7 +53,6 @@ const PUBLIC_STATIC_ROOT_FILES =
         '/style.css',
         '/mobile.css',
         '/robots.txt',
-        '/sitemap.xml',
         '/favicon.ico'
     ]);
 

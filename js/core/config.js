@@ -22,7 +22,7 @@ const DEFAULT_APP_CONFIG = {
             disclaimer:
                 'Unofficial community project. Not affiliated with or endorsed by BULKHEAD or the WARDOGS development team.',
             productName:
-                'WARDOGS Artillery Calculator',
+                'PROJECT: ARTY · WARDOGS Artillery Calculator',
             authorLabel:
                 'by',
             authorName:
@@ -30,7 +30,7 @@ const DEFAULT_APP_CONFIG = {
             authorUrl:
                 'https://discord.com/users/202109460238434304',
             sourceCodeUrl:
-                'https://github.com/apollyon-sys/wardogs-calculator',
+                'https://github.com/scopeddlol/project-arty',
             version:
                 '1.10.0'
         }
