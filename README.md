@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Vanilla JS](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=000)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![GitHub Pages](https://img.shields.io/badge/Hosted_on-GitHub_Pages-222?style=flat-square&logo=github)](https://pages.github.com/)
+[![Container image](https://github.com/scopeddlol/wardogs-arty-calculator/actions/workflows/docker.yml/badge.svg)](https://github.com/scopeddlol/wardogs-arty-calculator/pkgs/container/wardogs-arty-calculator)
 
 A lightweight, open-source **L81 Mortar** and **SPH-2** artillery calculator, live team map, and tactical planning tool for **WARDOGS**.
 
@@ -61,10 +62,22 @@ Detailed documentation is split into focused files to keep this README concise.
 - [Message of the Day](docs/motd.md) — MOTD configuration, localization, and behavior
 - [Collaborative lobbies](docs/lobbies.md) — live team map behaviour, Cloudflare deployment, limits, privacy, and recovery
 - [Security hardening](docs/security.md) — public-source threat model, Cloudflare headers, secrets, CI, and residual risks
+- [Self-hosting with Docker](docs/self-hosting.md) — Docker Compose setup, configuration, updates and GHCR image publishing
 - [Contributing](docs/contributing.md) — contribution guidelines
 - [License & Disclaimer](docs/legal.md) — MIT scope, third-party assets, and project disclaimer
 
-## Quick Start
+## Self-Hosting
+
+Run your own copy with Docker Compose:
+
+```bash
+curl -O https://raw.githubusercontent.com/scopeddlol/wardogs-arty-calculator/main/docker-compose.yml
+docker compose up -d
+```
+
+Then open `http://localhost:8080/`. Map tiles are proxied and cached by the container, so it works on any hostname or LAN address. Lobbies and analytics are disabled in self-hosted builds. See [Self-hosting with Docker](docs/self-hosting.md) for configuration, updates and HTTPS.
+
+## Quick Start (development)
 
 ```bash
 npm run build

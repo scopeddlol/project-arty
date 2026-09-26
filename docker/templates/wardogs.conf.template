@@ -1,0 +1,100 @@
+# Rendered to /tmp/wardogs.conf by the nginx image entrypoint (envsubst).
+# Only ${ASSET_UPSTREAM}, ${CDN_CACHE_MAX_SIZE} and ${NGINX_LOCAL_RESOLVERS}
+# are substituted; every other $variable is left for nginx.
+
+# Fingerprinted JS/CSS are requested with ?v=<build hash> and never change.
+map $arg_v $wardogs_static_cache {
+    ""      "no-cache";
+    default "public, max-age=31536000, immutable";
+}
+
+# Map tiles and Terrain3D chunks, cached locally after the first request.
+proxy_cache_path /var/cache/nginx/cdn levels=1:2 keys_zone=wardogs_cdn:10m
+                 max_size=${CDN_CACHE_MAX_SIZE} inactive=90d use_temp_path=off;
+
+server {
+    listen 8080 default_server;
+    server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Relative redirects keep /mobile -> /mobile/ working behind port
+    # mappings and reverse proxies.
+    absolute_redirect off;
+
+    add_header Content-Security-Policy "frame-ancestors 'none'" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer" always;
+    add_header Permissions-Policy "camera=(), geolocation=(), microphone=()" always;
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+        add_header_inherit merge;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location ~* \.(?:js|mjs|css)$ {
+        add_header_inherit merge;
+        add_header Cache-Control $wardogs_static_cache always;
+    }
+
+    location ~* \.(?:png|webp|svg|ico|jpe?g|gif)$ {
+        add_header_inherit merge;
+        add_header Cache-Control "public, max-age=604800" always;
+    }
+
+    # Same-origin proxy for the asset CDN. Keeps the browser away from CDN
+    # CORS rules, so the app works on any hostname or LAN address.
+    # ^~ stops the static-file regex locations above from matching tiles.
+    location ^~ /cdn/ {
+        location ~ ^/cdn/(?<wardogs_asset>.+)$ {
+            limit_except GET {
+                deny all;
+            }
+
+            resolver ${NGINX_LOCAL_RESOLVERS} valid=300s ipv6=off;
+            resolver_timeout 5s;
+
+            proxy_pass ${ASSET_UPSTREAM}/$wardogs_asset$is_args$args;
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+            proxy_set_header Origin "";
+            proxy_set_header Referer "";
+            proxy_set_header Cookie "";
+            proxy_set_header Authorization "";
+
+            proxy_ssl_server_name on;
+            proxy_ssl_verify on;
+            proxy_ssl_verify_depth 4;
+            proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+
+            proxy_connect_timeout 10s;
+            proxy_read_timeout 30s;
+
+            # Upstream releases are immutable, so cache them regardless of the
+            # CDN's own headers and keep serving them if the CDN is unreachable.
+            proxy_cache wardogs_cdn;
+            proxy_cache_key $wardogs_asset$is_args$args;
+            proxy_ignore_headers Cache-Control Expires Set-Cookie Vary;
+            proxy_hide_header Set-Cookie;
+            proxy_cache_valid 200 30d;
+            proxy_cache_valid 404 1m;
+            proxy_cache_lock on;
+            proxy_cache_background_update on;
+            proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+
+            add_header_inherit merge;
+            add_header X-Cache-Status $upstream_cache_status always;
+        }
+
+        return 404;
+    }
+}

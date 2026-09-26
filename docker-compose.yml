@@ -1,0 +1,29 @@
+# Self-hosted WARDOGS Artillery Calculator.
+#
+#   docker compose up -d        # then open http://localhost:8080
+#
+# Settings can be overridden in a .env file next to this one (see .env.example).
+# Without a published image, `docker compose up -d --build` builds it locally.
+
+services:
+  wardogs:
+    image: ghcr.io/scopeddlol/wardogs-arty-calculator:latest
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${WARDOGS_PORT:-8080}:8080"
+    environment:
+      ASSET_UPSTREAM: ${ASSET_UPSTREAM:-https://assets.wardogs-artillery.com}
+      CDN_CACHE_MAX_SIZE: ${CDN_CACHE_MAX_SIZE:-2g}
+    volumes:
+      - cdn-cache:/var/cache/nginx/cdn
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  cdn-cache:
