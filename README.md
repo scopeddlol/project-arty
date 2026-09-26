@@ -32,14 +32,19 @@
 
 ```bash
 curl -O https://raw.githubusercontent.com/scopeddlol/project-arty/main/docker-compose.yml
+mkdir map-assets
 docker compose up -d
 ```
 
 Open **http://localhost:8080**. Phones are sent to the mobile interface
 automatically.
 
-Update with `docker compose pull && docker compose up -d`. Port, tile source and
-cache size can be changed in a `.env` file; see [Self-hosting](docs/self-hosting.md).
+> **Bring your own map assets.** Map imagery and Terrain3D data are not
+> included. Put your own, legally obtained tiles in `map-assets/` and restart;
+> see [Map assets](docs/self-hosting.md#map-assets) for the layout. Without
+> them everything works, but the map background is blank.
+
+Update with `docker compose pull && docker compose up -d`.
 
 ## Features
 
@@ -54,20 +59,20 @@ cache size can be changed in a `.env` file; see [Self-hosting](docs/self-hosting
 - **Desktop and mobile:** a full sidebar layout, plus a separate map-first
   touch UI with pinch zoom and a bottom sheet.
 - **13 languages,** with light and dark themes and accessibility settings.
-- **Self-host friendly:** map tiles are proxied and cached by the container, so
-  it works on any domain or LAN address, even plain HTTP.
+- **Self-host friendly:** one container that runs on any domain or LAN address,
+  even over plain HTTP, and serves map assets from a folder you control.
 
 ## How it works
 
 ```text
 Browser ──► nginx (container, :8080)
-              ├── /           static app (HTML, JS, CSS, JSON)
-              └── /cdn/…      map tiles + terrain ──► upstream asset CDN
-                                  cached on the cdn-cache volume
+              ├── /                 static app (HTML, JS, CSS, JSON)
+              ├── /maps/tiles/…     ┐
+              └── /data/terrain/…   ┘ your map-assets folder (read-only mount)
 ```
 
 The image runs as a non-root user on a read-only filesystem, with a health check
-at `/healthz`. It makes no third-party requests from the browser.
+at `/healthz`. It contains no map imagery and makes no third-party requests.
 
 ## Development
 
@@ -105,8 +110,8 @@ pull request.
 
 PROJECT: ARTY is based on the
 [WARDOGS Artillery Calculator](https://github.com/apollyon-sys/wardogs-calculator)
-by **Apollyon**. Map imagery and terrain data are served from that project's
-asset CDN.
+by **Apollyon**. This fork does not use, proxy or redistribute that project's
+hosted map and terrain assets.
 
 The original source code is released under the [MIT License](LICENSE). WARDOGS
 game assets, map imagery, names, logos and trademarks are **not** covered by the

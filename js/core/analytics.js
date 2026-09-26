@@ -763,11 +763,6 @@ function classifyOperationalResource(target) {
         } else if (sameOrigin) {
             origin = 'site';
         } else if (
-            host ===
-            'assets.wardogs-artillery.com'
-        ) {
-            origin = 'assets-cdn';
-        } else if (
             host.includes('umami')
         ) {
             origin = 'umami';

@@ -2,6 +2,10 @@
 #
 #   docker compose up -d        # then open http://localhost:8080
 #
+# Map imagery and terrain data are not included. Put your own files in the
+# map-assets folder next to this file (see docs/self-hosting.md#map-assets)
+# and restart the container.
+#
 # Settings can be overridden in a .env file next to this one (see .env.example).
 # Without a published image, `docker compose up -d --build` builds it locally.
 
@@ -12,11 +16,8 @@ services:
     restart: unless-stopped
     ports:
       - "${ARTY_PORT:-8080}:8080"
-    environment:
-      ASSET_UPSTREAM: ${ASSET_UPSTREAM:-https://assets.wardogs-artillery.com}
-      CDN_CACHE_MAX_SIZE: ${CDN_CACHE_MAX_SIZE:-2g}
     volumes:
-      - cdn-cache:/var/cache/nginx/cdn
+      - ${ARTY_ASSETS_DIR:-./map-assets}:/srv/arty-assets:ro
     read_only: true
     tmpfs:
       - /tmp
@@ -24,6 +25,3 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
-
-volumes:
-  cdn-cache:

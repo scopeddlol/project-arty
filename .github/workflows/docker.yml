@@ -83,14 +83,26 @@ jobs:
           check /ru/ 200
           check /maps/ozeti/ 200
           check /config/app.json 200
+          check /assets-status.json 200
           check /mobile 301
+          # The image must never contain map imagery or terrain chunks.
+          check /maps/tiles/bakurani/zoom_0/0_0.webp 404
 
           curl -sf -o map.json http://localhost:8080/maps/bakurani.json
-          grep -q '"/cdn/releases/' map.json
+          grep -q '"path": "maps/tiles/bakurani"' map.json
 
           curl -sf -o index.html http://localhost:8080/
           if grep -q 'cloud.umami.is' index.html; then
             echo "Analytics script was not removed from the self-hosted build"
+            exit 1
+          fi
+
+          if docker exec arty grep -rlq 'assets.wardogs-artillery.com' /usr/share/nginx/html /etc/nginx; then
+            echo "The image references the upstream asset CDN"
+            exit 1
+          fi
+          if [ -n "$(docker exec arty find /usr/share/nginx/html -name '*.bin' -o -path '*/maps/tiles*' | head -n 1)" ]; then
+            echo "The image contains map imagery or terrain data"
             exit 1
           fi
 

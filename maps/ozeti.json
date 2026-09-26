@@ -10,7 +10,7 @@
     "maxY": 99.56
   },
   "tiles": {
-    "path": "https://assets.wardogs-artillery.com/releases/assets-v1/maps/tiles/ozeti",
+    "path": "maps/tiles/ozeti",
     "tileSize": 256,
     "minZoom": 0,
     "maxZoom": 7,
@@ -18,10 +18,10 @@
     "defaultStyle": "grayscale",
     "styles": {
       "grayscale": {
-        "path": "https://assets.wardogs-artillery.com/releases/assets-v1/maps/tiles/ozeti"
+        "path": "maps/tiles/ozeti"
       },
       "color": {
-        "path": "https://assets.wardogs-artillery.com/releases/assets-v1/maps/tiles-color/ozeti"
+        "path": "maps/tiles-color/ozeti"
       }
     }
   },
